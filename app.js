@@ -1,15 +1,10 @@
 const express = require('express');
 const morgan = require('morgan');
-const rateLimit = require('express-rate-limit');
-const helmet = require('helmet');
-const mongoSanitize = require('express-mongo-sanitize');
-const xss = require('xss-clean');
-const hpp = require('hpp');
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
 
 // const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
+const teacherRouter = require('./routes/teacherRouter');
+const classRouter = require('./routes/classRouter'); 
 const globalErrorHandler = require('./controllers/errorController');
 const AppError = require('./utils/appError');
 
@@ -67,7 +62,8 @@ app.use((req, res, next) => {
 // 3) ROUTES
 // app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
-
+app.use('/api/v1/teachers', teacherRouter);
+app.use('/api/v1/classes', classRouter);
 // HANDLING UNHANDLED ROUTES
 app.all('*', (req, res, next) => {
   next(new AppError(`Cannot find ${req.originalUrl}. on this server!`, 404));
