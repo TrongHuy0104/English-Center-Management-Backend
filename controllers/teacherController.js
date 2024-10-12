@@ -1,53 +1,101 @@
-const catchAsync = require('../utils/catchAsync');
+const Teacher = require('../models/teacherModel');
 const Class = require('../models/classModel');
-const Student = require('../models/studentModel');
 const AppError = require('../utils/appError');
+const catchAsync = require('../utils/catchAsync');
+const factory = require('./handlerFactory');
 
-// Get students in classes taught by the teacher
-exports.getStudents = catchAsync(async (req, res, next) => {
-  // 1. Find the classes taught by the teacher
-  const classes = await Class.find({ teacher: req.user.role_id });
+// Hàm lấy thông tin của giáo viên dựa trên teacherId
+exports.getTeacherById = catchAsync(async (req, res, next) => {
+    const teacherData = await Teacher.findById(req.params.id);
+    console.log(req.params.id);
+    if(!teacherData) {
+        return next(new AppError('No teacher found with that ID', 404));
+    }
+    res.status(200).json({
+        status: 'success',
+        data: {
+          teacher 
+        },
+      });
+});
+// Hàm lấy lịch học của giáo viên dựa trên teacherId
+exports.getTeacherSchedule = catchAsync(async (req, res, next) => {
+    const teacherId = req.params.teacherId;
+    const classes = await Class.find({ teacher: teacherId });
 
-  // Check if the teacher has any classes
-  if (!classes.length) {
-    return next(new AppError('This teacher is not assigned to any classes.', 404));
-  }
+    if (!classes || classes.length === 0) {
+        return next(new AppError('No schedule found for this teacher ID', 404));
+    }
 
-  // 2. Get the students in those classes
-  const studentIds = classes.flatMap((classItem) => classItem.students);
+    const schedules = classes.map(classData => ({
+        className: classData.name,
+        schedule: classData.schedule
+    }));
 
-  // 3. Find the students by IDs
-  const students = await Student.find({ _id: { $in: studentIds } });
-
-  // 4. Send response
-  res.status(200).json({
-    status: 'success',
-    results: students.length,
-    data: {
-      students,
-    },
-  });
+    res.status(200).json({
+        status: 'success',
+        data: {
+            schedules
+        }
+    });
 });
 
-// Get classes taught by the teacher
-exports.getClassesByTeacher = catchAsync(async (req, res, next) => {
-  // Get the teacher ID from the logged-in user
-  const teacherId = req.user.role_id; // or req.user._id depending on your setup
-  console.log('Teacher ID:', teacherId); // Debugging line
-
-  // Find classes taught by the teacher
-  const classes = await Class.find({ teacher: teacherId });
-  console.log('Classes found:', classes); // Debugging line
-
-  // If no classes found
-  if (!classes.length) {
-    return next(new AppError('No classes found for this teacher.', 404));
-  }
-
-  res.status(200).json({
-    status: 'success',
-    data: {
-      classes,
-    },
+// Hàm lấy class của giáo viên dựa trên teacherId
+exports.getClassesByTeacherId = catchAsync(async (req, res, next) => {
+    const teacherId = req.params.teacherId; 
+  
+    const classes = await Class.find({ teacher: teacherId }); 
+  
+    if (classes.length === 0) {
+      return next(new AppError('No classes found for this teacher ID', 404)); 
+    }
+  
+    res.status(200).json({
+      status: 'success',
+      data: {
+        classes, 
+      },
+    });
   });
-});
+  
+  // Hàm cập nhật thông tin giáo viên
+  exports.updateTeacher = catchAsync(async (req, res, next) => {
+    const teacherId = req.params.id; 
+  
+
+    const updatedTeacher = await Teacher.findByIdAndUpdate(
+      teacherId,
+      {
+        name: req.body.name,
+        phone: req.body.phone,
+        gender: req.body.gender,
+        dateOfBirth: req.body.dateOfBirth,
+      },
+      {
+        new: true, 
+        runValidators: true, 
+      }
+    );
+  
+    if (!updatedTeacher) {
+      return next(new AppError('No teacher found with that ID', 404)); 
+    }
+  
+
+    const { name, phone, gender, dateOfBirth } = updatedTeacher;
+  
+    res.status(200).json({
+      status: 'success',
+      data: {
+        teacher: {
+          name,
+          phone,
+          gender,
+          dateOfBirth,
+        }, 
+      },
+    });
+  });
+
+
+  exports.getTeacherById = factory.getOne(Teacher);

@@ -10,10 +10,10 @@ const cookieParser = require('cookie-parser');
 
 // const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
+const teacherRouter = require('./routes/teacherRoutes');
+const classRouter = require('./routes/classRoutes');
 const globalErrorHandler = require('./controllers/errorController');
 const AppError = require('./utils/appError');
-
-const teacherRouter = require('./routes/teacherRoutes');
 
 const app = express();
 
@@ -69,9 +69,8 @@ app.use((req, res, next) => {
 // 3) ROUTES
 // app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
-
-app.use('/api/v1/teachers', teacherRouter);
-
+app.use('/api/v1/teacher', teacherRouter);
+app.use('/api/v1/classes', classRouter);
 
 // HANDLING UNHANDLED ROUTES
 app.all('*', (req, res, next) => {
