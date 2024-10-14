@@ -8,8 +8,9 @@ const hpp = require('hpp');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
-// const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
+const studentRouter = require('./routes/studentRoutes');
+const attendanceRoutes = require('./routes/studentRoutes');
 const globalErrorHandler = require('./controllers/errorController');
 const AppError = require('./utils/appError');
 
@@ -67,7 +68,7 @@ app.use((req, res, next) => {
 // 3) ROUTES
 // app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
-
+app.use('/api/v1/student', studentRouter);
 // HANDLING UNHANDLED ROUTES
 app.all('*', (req, res, next) => {
   next(new AppError(`Cannot find ${req.originalUrl}. on this server!`, 404));
